@@ -15,9 +15,13 @@ export async function generateMetadata({ params }) {
   const { slug } = params;
   const SEO = await data("/"+slug);
 
+  if (SEO.error === "Page not found!") {
+    notFound(); // Redirect to 404 page
+  }
+
   return {
-    title: SEO.seo.title || null,
-    description: SEO.seo.description || null,
+    title: SEO.seo.title,
+    description: SEO.seo.description,
     keywords: SEO.seo.keywords,
     robots: {
       index: !SEO.seo.noindex,
@@ -27,16 +31,34 @@ export async function generateMetadata({ params }) {
         follow: !SEO.seo.nofollow,
       },
     },
+    openGraph: {
+      title: SEO.seo.image.title,
+      description: SEO.seo.image.description,
+      url: process.env.DOMAIN+"/"+slug,
+      siteName: SEO.seo.title,
+      images: [
+        {
+          url: `${process.env.HOST}/storage/uploads${SEO.seo.image.path}`, // Must be an absolute URL
+          width: 800,
+          height: 600,
+        },
+        {
+          url: `${process.env.HOST}/storage/uploads${SEO.seo.image.path}`, // Must be an absolute URL
+          width: 1800,
+          height: 1600,
+          alt: SEO.seo.image.title,
+        },
+      ],
+    },
   }
 }
 
 export default async function SlugPage({ params }) {
   const { slug } = params;
   const pageData = await data("/"+slug);
-
+  
   if (!pageData) {
     notFound(); // Redirect to 404 page
-    return null;
   }
 
   const isLayout = pageData.type === 'layout';
@@ -45,7 +67,6 @@ export default async function SlugPage({ params }) {
 
   if (!isLayout && !isCollection && !isSingleton) {
     notFound(); // Redirect to 404 page
-    return null;
   }
 
   return (

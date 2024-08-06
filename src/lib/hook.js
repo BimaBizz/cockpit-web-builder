@@ -21,3 +21,11 @@ export const fetchRoutes = async () => {
     const data = await response.json();
     return data;
   };
+
+  export const fetcSettings = async () => {
+    const response = await fetch(`${process.env.HOST}/api/pages/settings`,{
+        cache : 'no-cache'
+    }); // ganti dengan URL API kamu
+    const data = await response.json();
+    return data;
+  };
